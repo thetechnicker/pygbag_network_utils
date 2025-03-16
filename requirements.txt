@@ -1,0 +1,4 @@
+pygame
+websockets
+asyncio
+requests
