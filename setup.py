@@ -9,7 +9,7 @@ setup(
     version=VERSION,
     packages=find_packages(),
     install_requires=requirements,
-    url="https://github.com/thetechnicker/pygbag-multiplayer-sandbox",
+    url="https://github.com/thetechnicker/pygbag_network_utils",
     license="MIT",
     author="thetechnicker",
     author_email="106349149+thetechnicker@users.noreply.github.com",
