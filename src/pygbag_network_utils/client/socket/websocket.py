@@ -55,7 +55,7 @@ class WebSocketClient:
                     if data:
                         decoded_message = data.decode("utf-8")
                         self.buffer += decoded_message
-                        if decoded_message[-1] == "|":
+                        if decoded_message[-1] == "\n":
                             decoded_message = self.buffer
                             self.buffer = ""
                             decoded_message = decoded_message[:-1]
