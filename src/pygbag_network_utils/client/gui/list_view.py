@@ -1,9 +1,6 @@
 import pygame
 
-GRAY = (200, 200, 200)
-BLACK = (0, 0, 0)
-DARK_BLUE = (25, 25, 112)
-FONT_SMALL = pygame.font.Font(None, 32)
+from .consts import BLACK, DARK_BLUE, FONT_SMALL, GRAY
 
 
 class ListView:

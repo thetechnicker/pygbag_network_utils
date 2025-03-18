@@ -6,7 +6,7 @@ import websockets
 import random
 import logging
 import argparse
-from pygbag_network_utils.server.game_server import EchoServer
+from . import EchoServer
 
 
 class MainServer:
@@ -19,8 +19,8 @@ class MainServer:
     ):
         self.host = host
         self.port = port
-        self.echo_servers: dict[any, tuple[EchoServer, threading.Thread]] = {}
-        self.next_server_id = 1
+        self.echo_servers: dict[int, tuple[EchoServer, threading.Thread]] = {}
+        self.next_server_id = 0
         self.lock = threading.Lock()
         self.ssl_context = ssl_context
         self.logger = logging.getLogger("MainServer")
@@ -108,7 +108,7 @@ class MainServer:
         await websocket.send(json.dumps({"servers": server_list}) + "\n")
 
     async def create_echo_server(self):
-        echo_port = self.next_server_id + 9000 - 1
+        echo_port = self.next_server_id + 9000
         # echo_port = random.randint(9000, 9999)
         echo_server = self.game_server_class(self.host, echo_port)
         thread = threading.Thread(target=asyncio.run, args=(echo_server.start(),))
@@ -158,14 +158,6 @@ def main():
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    try:
-        ssl_context.load_cert_chain(certfile="certs/cert.pem", keyfile="certs/key.pem")
-        logging.info("SSL context loaded successfully")
-    except Exception as e:
-        logging.error(f"Failed to load SSL context: {str(e)}")
-        exit()
-
     parser = argparse.ArgumentParser(
         description="Main Server for managing Echo Servers"
     )
@@ -175,7 +167,26 @@ def main():
     parser.add_argument(
         "--port", type=int, default=8765, help="Port for the main server"
     )
+    parser.add_argument(
+        "--cert", type=int, default=None, help="Path to Cert file"
+    )
+    parser.add_argument(
+        "--key", type=int, default=None, help="Path to Key file"
+    )
+
     args = parser.parse_args()
+
+    ssl_context=None
+    if args.key and args.cert:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        try:
+            ssl_context.load_cert_chain(certfile=args.cert, keyfile=args.key)
+            logging.info("SSL context loaded successfully")
+        except Exception as e:
+            logging.error(f"Failed to load SSL context: {str(e)}")
+            logging.info("example will run withou ssl context")
+            ssl_context=None
+
 
     main_server = MainServer(host=args.host, port=args.port, ssl_context=ssl_context)
     asyncio.run(main_server.start())

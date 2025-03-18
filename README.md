@@ -18,4 +18,4 @@ This project is licensed under the MIT License. For more information, see the LI
 
 ## More Information
 
-U can find more information in [pygbag-multiplayer-sandbox](https://github.com/thetechnicker/pygbag-multiplayer-sandbox).
+This library is based on work done in [pygbag-multiplayer-sandbox](https://github.com/thetechnicker/pygbag-multiplayer-sandbox).

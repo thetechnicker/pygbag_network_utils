@@ -1,10 +1,6 @@
 import pygame
 
-BLACK = (0, 0, 0)
-DARK_BLUE = (25, 25, 112)
-LIGHT_GRAY = (220, 220, 220)
-WHITE = (255, 255, 255)
-FONT_SMALL = pygame.font.Font(None, 32)
+from .consts import BLACK, DARK_BLUE, LIGHT_GRAY, WHITE, FONT_SMALL
 
 
 class InputBox:
