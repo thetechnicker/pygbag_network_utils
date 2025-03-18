@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygbag_network_utils"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python library that provides network utilities for use with pygbag."
 readme = "README.md"
 authors = [
