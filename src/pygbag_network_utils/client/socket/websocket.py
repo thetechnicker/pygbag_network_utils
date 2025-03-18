@@ -113,6 +113,8 @@ class WebSocketClient:
             except Exception as e:
                 self.logger.error(f"Error sending data: {e}")
                 asyncio.create_task(self.reconnect())
+        else:
+            self.logger.error("Socket is not initialized.")
 
     def set_message_callback(self, callback):
         """Set the callback function for incoming messages."""
