@@ -6,7 +6,7 @@ import websockets
 import random
 import logging
 import argparse
-from . import EchoServer
+from . import BaseServer, EchoServer
 
 
 class MainServer:
@@ -19,7 +19,7 @@ class MainServer:
     ):
         self.host = host
         self.port = port
-        self.echo_servers: dict[int, tuple[EchoServer, threading.Thread]] = {}
+        self.echo_servers: dict[int, tuple[BaseServer, threading.Thread]] = {}
         self.next_server_id = 0
         self.lock = threading.Lock()
         self.ssl_context = ssl_context
@@ -38,10 +38,14 @@ class MainServer:
                     if command == "list":
                         await self.list_echo_servers(websocket)
                     elif command == "create":
-                        address = await self.create_echo_server()
+                        address, server_id = await self.create_echo_server()
                         await websocket.send(
                             json.dumps(
-                                {"message": f"Created Echo Server", "address": address}
+                                {
+                                    "message": f"Created Echo Server",
+                                    "address": address,
+                                    "server_id": server_id,
+                                }
                             )
                             + "\n"
                         )
@@ -110,7 +114,7 @@ class MainServer:
     async def create_echo_server(self):
         echo_port = self.next_server_id + 9000
         # echo_port = random.randint(9000, 9999)
-        echo_server = self.game_server_class(self.host, echo_port)
+        echo_server = self.game_server_class(self.host, echo_port, self.ssl_context)
         thread = threading.Thread(target=asyncio.run, args=(echo_server.start(),))
         thread.daemon = (
             True  # Allow main program to exit even if thread is still running
@@ -120,7 +124,7 @@ class MainServer:
             self.echo_servers[self.next_server_id] = (echo_server, thread)
             server_id = self.next_server_id
             self.next_server_id += 1
-        return f"ws://{self.host}:{echo_port}"
+        return f"ws://{self.host}:{echo_port}", server_id
 
     async def join_echo_server(self, websocket, server_id):
         with self.lock:
@@ -167,16 +171,12 @@ def main():
     parser.add_argument(
         "--port", type=int, default=8765, help="Port for the main server"
     )
-    parser.add_argument(
-        "--cert", type=int, default=None, help="Path to Cert file"
-    )
-    parser.add_argument(
-        "--key", type=int, default=None, help="Path to Key file"
-    )
+    parser.add_argument("--cert", type=int, default=None, help="Path to Cert file")
+    parser.add_argument("--key", type=int, default=None, help="Path to Key file")
 
     args = parser.parse_args()
 
-    ssl_context=None
+    ssl_context = None
     if args.key and args.cert:
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         try:
@@ -185,8 +185,7 @@ def main():
         except Exception as e:
             logging.error(f"Failed to load SSL context: {str(e)}")
             logging.info("example will run withou ssl context")
-            ssl_context=None
-
+            ssl_context = None
 
     main_server = MainServer(host=args.host, port=args.port, ssl_context=ssl_context)
     asyncio.run(main_server.start())
